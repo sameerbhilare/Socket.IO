@@ -1,0 +1,24 @@
+<script>
+    //***************************************************************************************
+    // Everything here is Browser side JavaScript.
+    // The websocket APIs used here are native JavaSript Websocket APIs, NOT related to Node.
+    //***************************************************************************************
+
+    // using websocket protocol to create JS websocket
+    let ws = new WebSocket('ws://localhost:3000');
+    console.log(ws);
+
+    // listening to connection open event
+    // when the connection is opened with the server, this event will be called
+    ws.onopen = (event) => {
+        // as soon as connection is open, we are sending a message to the server
+        ws.send('I am so excited. I am connected.');
+    }
+
+    // listening to server message event. 
+    // when server says somthing, this will be called.
+    ws.onmessage = (event) => {
+        console.log(event);
+    }
+
+</script>

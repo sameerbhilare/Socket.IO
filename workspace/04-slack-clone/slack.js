@@ -1,7 +1,10 @@
 const express = require('express');
 const socketio = require('socket.io');
+const namespaces = require('./data/namespaces');
 
 const app = express();
+
+console.log(namespaces);
 
 // serving static files
 app.use(express.static(__dirname + '/public'));

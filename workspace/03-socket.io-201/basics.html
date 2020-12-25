@@ -1,0 +1,28 @@
+<!-- 
+        using the same version as that on the server.
+        Below included script will add 'io' function at global scope (into the window)
+-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+<script>
+    //***************************************************************************************
+    // Everything here is Browser side JavaScript.
+    // Using Socket.IO
+    //***************************************************************************************
+
+    // create socket by connecting to given url
+    const socket = io('http://localhost:3000'); // note it's 'http' not 'ws'
+    console.log(socket);
+
+    // listening to connection open event
+    // when the connection is opened with the server, this event will be called
+    socket.on('connect', (data) => {
+        // listening to 'welcome' event
+        socket.on('welcome', (msg) => {
+            console.log(msg);
+        });
+
+        // sending message event with some data to server
+        socket.emit('message', {data: 'I am so excited. I am connected.'});
+    });
+
+</script>

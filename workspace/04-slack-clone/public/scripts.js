@@ -14,7 +14,7 @@ socket.on('nsList', (nsData) => {
     namespacesDiv.innerHTML += `<div class="namespace" ns="${ns.endpoint}"><img src="${ns.img}"></div>`;
   });
 
-  // Add click listeners for each namespace
+  // Add click listeners for each NAMESPACE
   Array.from(document.getElementsByClassName('namespace')).forEach(
     (nsElement) => {
       nsElement.addEventListener('click', (event) => {
@@ -23,6 +23,33 @@ socket.on('nsList', (nsData) => {
       });
     }
   );
+
+  /* 4. JOIN THE (CHAT) NAMESPACE. */
+  const nsSocket = io('http://localhost:3000/wiki');
+  nsSocket.on('nsRoomLoad', (nsRooms) => {
+    // console.log(nsRooms);
+
+    /* 6. UPDATE DOM WITH ROOM INFO FOR GIVEN NAMESPACE. */
+    let roomListDiv = document.querySelector('.room-list');
+    roomListDiv.innerHTML = '';
+    nsRooms.forEach((nsRoom) => {
+      let glyph;
+      if (nsRoom.privateRoom) {
+        glyph = 'lock';
+      } else {
+        glyph = 'globe';
+      }
+
+      roomListDiv.innerHTML += `<li class="room"><span class="glyphicon glyphicon-${glyph}"></span>${nsRoom.roomTitle}</li>`;
+    });
+
+    // Add click listeners for each ROOM
+    Array.from(document.getElementsByClassName('room')).forEach((roomEle) => {
+      roomEle.addEventListener('click', (event) => {
+        console.log('Someone clicked on ' + event.target.innerText);
+      });
+    });
+  });
 });
 
 socket.on('messageFromServer', (dataFromServer) => {

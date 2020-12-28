@@ -34,7 +34,10 @@ io.on('connection', (socket) => {
 
 // loop through each namespace and listen for connection
 namespaces.forEach((namespace) => {
-  io.of(namespace.endpoint).on('connection', (socket) => {
-    console.log(`${socket.id} has joined namespace ${namespace.endpoint}`);
+  io.of(namespace.endpoint).on('connection', (nsSocket) => {
+    console.log(`${nsSocket.id} has joined namespace ${namespace.endpoint}`);
+
+    /* 5. ONCE A SOCKET IS CONNECTED TO ONE OF OUR NAMESPACES, SEND THAT NS'S ROOM INFO BACK. */
+    nsSocket.emit('nsRoomLoad', namespaces[0].rooms);
   });
 });

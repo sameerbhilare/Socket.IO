@@ -35,4 +35,24 @@ function joinRoom(roomName) {
 
     document.querySelector('.curr-room-text').innerText = roomName;
   });
+
+  // listen to the search input change event
+  let searchBoxEle = document.getElementById('search-box');
+  console.log(searchBoxEle);
+  searchBoxEle.addEventListener('input', (e) => {
+    let messages = Array.from(document.getElementsByClassName('message-text'));
+    //console.log(searchBoxEle.value);
+    console.log('messages', messages);
+    messages.forEach((msg) => {
+      // case insensitive search
+      if (
+        msg.innerText.toLowerCase().indexOf(e.target.value.toLowerCase()) === -1
+      ) {
+        // message does not contain user searched input text, so hide the message
+        msg.style.display = 'none';
+      } else {
+        msg.style.display = 'block';
+      }
+    });
+  });
 }

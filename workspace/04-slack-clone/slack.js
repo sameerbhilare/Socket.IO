@@ -38,10 +38,19 @@ namespaces.forEach((namespace) => {
     console.log(`${nsSocket.id} has joined namespace ${namespace.endpoint}`);
 
     /* 5. ONCE A SOCKET IS CONNECTED TO ONE OF OUR NAMESPACES, SEND THAT NS'S ROOM INFO BACK. */
-    nsSocket.emit('nsRoomLoad', namespaces[0].rooms);
+    nsSocket.emit('nsRoomLoad', namespace.rooms);
 
     // listen to 'joinRoom event -> join the room and send back room chat history
     nsSocket.on('joinRoom', (roomToJoin, numberOfUsersCallback) => {
+      // before joining a room, leave from other rooms.
+      // every socket joins its own room immediately upon connection to a namespace.
+      // The second thing will always be the next room.
+      // console.log(nsSocket.rooms);
+      const roomToLeave = Object.keys(nsSocket.rooms)[1]; // 0th key will always be of the socket's OWN room
+      nsSocket.leave(roomToLeave);
+      // send back number of users in the room to ALL sockets connected to THIS room.
+      updateUsersInRoom(namespace, roomToLeave);
+
       /* 7. JOIN TO SELECTED ROOM */
       nsSocket.join(roomToJoin);
 
@@ -66,17 +75,7 @@ namespaces.forEach((namespace) => {
       nsSocket.emit('historyCatchup', nsRoom.history);
 
       // send back number of users in the room to ALL sockets connected to THIS room.
-      io.of(namespace.endpoint)
-        .in(roomToJoin)
-        .clients((error, clients) => {
-          console.log(
-            `There are ${clients.length} users in the ${roomToJoin} room`
-          );
-
-          io.of(namespace.endpoint)
-            .in(roomToJoin)
-            .emit('updateMembers', clients.length);
-        });
+      updateUsersInRoom(namespace, roomToJoin);
     });
 
     // listen to client messages
@@ -108,3 +107,14 @@ namespaces.forEach((namespace) => {
     });
   });
 });
+
+function updateUsersInRoom(namespace, room) {
+  // send back number of users in the room to ALL sockets connected to THIS room.
+  io.of(namespace.endpoint)
+    .in(room)
+    .clients((error, clients) => {
+      console.log(`There are ${clients.length} users in the ${room} room`);
+
+      io.of(namespace.endpoint).in(room).emit('updateMembers', clients.length);
+    });
+}

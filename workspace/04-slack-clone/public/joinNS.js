@@ -1,4 +1,15 @@
 function joinNS(endpoint) {
+  if (nsSocket) {
+    // if nsSocket is already created, close it before creating a new one.
+    // that's because we should disconnect/close socket when we leave a namespace
+    console.log('Closing ' + nsSocket.id);
+    nsSocket.close();
+
+    // remove the submit button event listener before it is added again.
+    document
+      .getElementById('user-input')
+      .removeEventListener('submit', formSubmissionCallback);
+  }
   /* 4. JOIN THE (CHAT) NAMESPACE. */
   nsSocket = io(`http://localhost:3000${endpoint}`);
   nsSocket.on('nsRoomLoad', (nsRooms) => {
@@ -22,6 +33,8 @@ function joinNS(endpoint) {
     Array.from(document.getElementsByClassName('room')).forEach((roomEle) => {
       roomEle.addEventListener('click', (event) => {
         console.log('Someone clicked on ' + event.target.innerText);
+        // join selected room
+        joinRoom(event.target.innerText);
       });
     });
 
@@ -40,16 +53,20 @@ function joinNS(endpoint) {
   });
 
   // send msg to server
-  document.getElementById('user-input').addEventListener('submit', (event) => {
-    event.preventDefault();
+  document
+    .getElementById('user-input')
+    .addEventListener('submit', formSubmissionCallback);
+}
 
-    const newMessage = document.getElementById('user-message').value;
-    document.getElementById('user-message').value = ''; // reset form
+function formSubmissionCallback(event) {
+  event.preventDefault();
 
-    if (newMessage) {
-      nsSocket.emit('newMessageToServer', { text: newMessage });
-    }
-  });
+  const newMessage = document.getElementById('user-message').value;
+  document.getElementById('user-message').value = ''; // reset form
+
+  if (newMessage) {
+    nsSocket.emit('newMessageToServer', { text: newMessage });
+  }
 }
 
 function buildHTMLMessage(msg) {

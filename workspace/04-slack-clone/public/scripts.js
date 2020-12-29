@@ -24,10 +24,12 @@ socket.on('nsList', (nsData) => {
       nsElement.addEventListener('click', (event) => {
         const endpoint = nsElement.getAttribute('ns'); // get endpoint name attached to 'ns' attribute of 'namespace' div
         console.log(`${endpoint} I should go to now.`);
+        // join NS on click
+        joinNS(endpoint);
       });
     }
   );
 
-  // join NS
+  // join NS automatically for first time
   joinNS('/wiki');
 });

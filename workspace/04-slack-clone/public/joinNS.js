@@ -1,6 +1,6 @@
 function joinNS(endpoint) {
   /* 4. JOIN THE (CHAT) NAMESPACE. */
-  const nsSocket = io(`http://localhost:3000${endpoint}`);
+  nsSocket = io(`http://localhost:3000${endpoint}`);
   nsSocket.on('nsRoomLoad', (nsRooms) => {
     // console.log(nsRooms);
 
@@ -24,12 +24,19 @@ function joinNS(endpoint) {
         console.log('Someone clicked on ' + event.target.innerText);
       });
     });
+
+    // Join a room automatically... for first time
+    const topRoom = document.querySelector('.room'); // returns element with first occurance of 'room' class
+    const topRoomName = topRoom.innerText;
+    console.log(topRoomName);
+    // Join top room
+    joinRoom(topRoomName);
   });
 
   // receive msg from server
   nsSocket.on('messageToClients', (msg) => {
     console.log(msg);
-    document.querySelector('#messages').innerHTML += `<li>${msg}</li>`;
+    document.querySelector('#messages').innerHTML += buildHTMLMessage(msg);
   });
 
   // send msg to server
@@ -37,8 +44,26 @@ function joinNS(endpoint) {
     event.preventDefault();
 
     const newMessage = document.getElementById('user-message').value;
+    document.getElementById('user-message').value = ''; // reset form
+
     if (newMessage) {
       nsSocket.emit('newMessageToServer', { text: newMessage });
     }
   });
+}
+
+function buildHTMLMessage(msg) {
+  const convertedDate = new Date(msg.time).toLocaleString();
+  const newHTML = `
+    <li>
+        <div class="user-image">
+            <img src="${msg.avatar}" />
+        </div>
+        <div class="user-message">
+            <div class="user-name-time">${msg.username} <span>${convertedDate}</span></div>
+            <div class="message-text">${msg.text}</div>
+        </div>
+    </li>
+    `;
+  return newHTML;
 }

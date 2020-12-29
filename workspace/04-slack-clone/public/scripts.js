@@ -1,5 +1,8 @@
 const socket = io('http://localhost:3000'); // this is a '/' namespace/endpoint
 
+// Global variable, using nsSocket in joinNS.js and joinRoom.js
+let nsSocket = '';
+
 // this listener i just for testing. Not required. We can remove it.
 socket.on('connect', () => {
   console.log(socket.id + ' connected.');

@@ -39,5 +39,72 @@ namespaces.forEach((namespace) => {
 
     /* 5. ONCE A SOCKET IS CONNECTED TO ONE OF OUR NAMESPACES, SEND THAT NS'S ROOM INFO BACK. */
     nsSocket.emit('nsRoomLoad', namespaces[0].rooms);
+
+    // listen to 'joinRoom event -> join the room and send back room chat history
+    nsSocket.on('joinRoom', (roomToJoin, numberOfUsersCallback) => {
+      /* 7. JOIN TO SELECTED ROOM */
+      nsSocket.join(roomToJoin);
+
+      // Below commented code is to demonstrate the ACK arg function available to the socket.on function
+      // get the total number of clients connected to this room & call the callback sent from client
+      /*
+      io.of(namespace.endpoint)
+        .in(roomToJoin)
+        .clients((error, clients) => {
+          // call the callback sent from client
+          numberOfUsersCallback(clients.length);
+        });
+      */
+
+      /* 8. SEND THE CHAT HISTORY ON JOINING A ROOM. */
+      // we need to find the Room object for this room
+      const nsRoom = namespace.rooms.find(
+        (room) => room.roomTitle === roomToJoin
+      );
+      // console.log(nsRoom);
+      // send the history to the client who just joined
+      nsSocket.emit('historyCatchup', nsRoom.history);
+
+      // send back number of users in the room to ALL sockets connected to THIS room.
+      io.of(namespace.endpoint)
+        .in(roomToJoin)
+        .clients((error, clients) => {
+          console.log(
+            `There are ${clients.length} users in the ${roomToJoin} room`
+          );
+
+          io.of(namespace.endpoint)
+            .in(roomToJoin)
+            .emit('updateMembers', clients.length);
+        });
+    });
+
+    // listen to client messages
+    nsSocket.on('newMessageToServer', (msg) => {
+      const fullMsg = {
+        text: msg.text,
+        time: Date.now(),
+        username: 'Sameer',
+        avatar: 'https://via.placeholder.com/30', // placeholder image of size 30 x 30
+      };
+
+      /**************/
+      // send this message to ALL the sockets that are in the room that THIS socket is in.
+
+      // every socket joins its own room immediately upon connection to a namespace.
+      // The second thing will always be the next room.
+      console.log(nsSocket.rooms);
+      const roomTitle = Object.keys(nsSocket.rooms)[1]; // 0th key will always be of the socket's OWN room
+
+      // we need to find the Room object for this room
+      const nsRoom = namespace.rooms.find(
+        (room) => room.roomTitle === roomTitle
+      );
+      // add the message to the room's chat history
+      nsRoom.addMessage(fullMsg);
+
+      // using 'io' instead of nsSocket (namespace) so that everyone including this socket will get this msg
+      io.of(namespace.endpoint).to(roomTitle).emit('messageToClients', fullMsg);
+    });
   });
 });

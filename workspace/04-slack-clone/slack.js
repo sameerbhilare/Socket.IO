@@ -19,7 +19,7 @@ const io = socketio(expressServer);
 /* 1. JOIN THE MAIN NAMESPACE ('/') */
 // when someone connects to socketio server, this callback runs
 // 'connection' and 'connect' built-in events are literally exactly the same.
-// io.on() is SAME as io.of('/).on() => main namespace
+// io = io.of('/) = io.sockets => main namespace
 io.on('connection', (socket) => {
   console.log('Handshake', socket.handshake);
 

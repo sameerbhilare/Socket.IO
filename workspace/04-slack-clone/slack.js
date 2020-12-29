@@ -1,5 +1,6 @@
 const express = require('express');
-const socketio = require('socket.io');
+const socketio = require('socket.io'); // get Server version of socket.io
+// load namespaces data from file. (Seed Data)
 const namespaces = require('./data/namespaces');
 
 const app = express();

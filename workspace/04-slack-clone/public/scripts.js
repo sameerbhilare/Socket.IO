@@ -1,4 +1,11 @@
-const socket = io('http://localhost:3000'); // this is a '/' namespace/endpoint
+//const socket = io('http://localhost:3000'); // this is a '/' namespace/endpoint
+const username = prompt('Enter your name: ');
+// this is a '/' namespace/endpoint
+const socket = io('http://localhost:3000', {
+  query: {
+    username: username,
+  },
+});
 
 // Global variable, using nsSocket in joinNS.js and joinRoom.js
 let nsSocket = '';

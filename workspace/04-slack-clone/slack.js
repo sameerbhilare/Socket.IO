@@ -20,6 +20,8 @@ const io = socketio(expressServer);
 // 'connection' and 'connect' built-in events are literally exactly the same.
 // io.on() is SAME as io.of('/).on() => main namespace
 io.on('connection', (socket) => {
+  console.log('Handshake', socket.handshake);
+
   /* 2. AS SOON AS SOMEBODY CONNECTS TO MAIN NS, SEND BACK NAMESPACES INFO */
 
   // A) build an array to send back img and endpoint for each namespace.
@@ -35,6 +37,11 @@ io.on('connection', (socket) => {
 // loop through each namespace and listen for connection
 namespaces.forEach((namespace) => {
   io.of(namespace.endpoint).on('connection', (nsSocket) => {
+    // username will be sent from client as part of socket.io initialization
+    // Handshake happens only one time and that is at the time of joining the main (/) namespace.
+    // And the same 'handshake' object is accessible from different namespaces.
+    const username = nsSocket.handshake.query.username;
+
     console.log(`${nsSocket.id} has joined namespace ${namespace.endpoint}`);
 
     /* 5. ONCE A SOCKET IS CONNECTED TO ONE OF OUR NAMESPACES, SEND THAT NS'S ROOM INFO BACK. */
@@ -83,7 +90,7 @@ namespaces.forEach((namespace) => {
       const fullMsg = {
         text: msg.text,
         time: Date.now(),
-        username: 'Sameer',
+        username: username,
         avatar: 'https://via.placeholder.com/30', // placeholder image of size 30 x 30
       };
 

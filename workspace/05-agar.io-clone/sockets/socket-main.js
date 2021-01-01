@@ -5,7 +5,6 @@ const Player = require('./classes/Player');
 const PlayerConfig = require('./classes/PlayerConfig');
 const PlayerData = require('./classes/PlayerData');
 
-let orbs = [];
 // default game settings
 let settings = {
   defaultOrbs: 500, // number of orbs
@@ -18,20 +17,31 @@ let settings = {
   worldHeight: 500,
 };
 
+// orbs
+let orbs = [];
+// players - PlayerData array
+let players = [];
+
 // call init game on load
 initGame();
 
 io.sockets.on('connect', (socket) => {
   // a player has connected now.
 
-  // make PlayerConfig object
-  let playerConfig = new PlayerConfig(settings);
-  // make PlayerData object
-  let playerData = new PlayerData(null, settings);
-  // make master Player object which will hold both PlayerConfig and PlayerData
-  let player = new Player(socket.id, playerConfig, playerData);
+  // listening to client's request for init
+  socket.on('init', (data) => {
+    // make PlayerConfig object
+    let playerConfig = new PlayerConfig(settings);
+    // make PlayerData object
+    let playerData = new PlayerData(data.playerName, settings);
+    // make master Player object which will hold both PlayerConfig and PlayerData
+    let player = new Player(socket.id, playerConfig, playerData);
 
-  socket.emit('init', { orbs });
+    // return orbs as response to the client's 'init' event
+    socket.emit('initReturn', { orbs });
+
+    players.push(playerData);
+  });
 });
 
 // run at the beginning of each game

@@ -1,7 +1,4 @@
 // everything related to drawing on the canvas
-function init() {
-  draw();
-}
 
 // ==============================
 // ========== DRAWING ===========

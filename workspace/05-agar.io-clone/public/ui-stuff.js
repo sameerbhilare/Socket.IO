@@ -3,6 +3,7 @@
 let wHeight = $(window).height();
 let wWidth = $(window).width();
 let player = {}; // all about player
+let orbs = []; // orbs
 
 let canvas = document.getElementById('the-canvas');
 // we are going to draw 2d on the canvas

@@ -16,14 +16,15 @@ player.locY = Math.floor(500 * Math.random() + 100);
     we will draw the player in a new spot, if they have if they have moved the mouse at all.
 */
 function draw() {
+  // reset the context translatino back to default bcz context.translate down below is accumulative
+  // this should happen first, before clearRect()
+  context.setTransform(1, 0, 0, 1, 0, 0);
+
   // it tells the canvas (the screen) to start at 0,0 which is the upper left corner of the screen
   // and draw a rectangle down to canvas with canvas height which is going to be the bottom right corner
   // of the canvas and clear everything out.
   // i.e. every time we draw a frame, wipe the entire canvas out
   context.clearRect(0, 0, canvas.width, canvas.height);
-
-  // reset the context translatino back to default bcz context.translate down below is accumulative
-  context.setTransform(1, 0, 0, 1, 0, 0);
 
   // clamp the camera/viewport to the player
   const camX = -player.locX + canvas.width / 2;
@@ -44,7 +45,7 @@ function draw() {
   // arg 5   = where to stop drawing the arc/circle in radians
   // 1 Math.PI = half circle, 2 Math.PI = full circle
   context.arc(player.locX, player.locY, 10, 0, Math.PI * 2);
-  // actually fills in
+  // actually fills in/draws
   context.fill();
 
   // draw border around
@@ -54,6 +55,24 @@ function draw() {
   context.strokeStyle = 'rgb(0, 255, 0)';
   // border draw
   context.stroke();
+
+  // ================
+  // Draw orbs
+  orbs.forEach((orb) => {
+    // get us a new path which will disconnect us from the old one
+    context.beginPath();
+    // this means whatever we draw will be filled with given color - e.g. red
+    context.fillStyle = orb.color;
+    // draw a circle
+    // arg 1,2 = x,y of the center of the arc
+    // arg 3   = radius of the arc
+    // arg 4   = where to start drawing the arc/circle in radians (0 means 3 'o clock)
+    // arg 5   = where to stop drawing the arc/circle in radians
+    // 1 Math.PI = half circle, 2 Math.PI = full circle
+    context.arc(orb.locX, orb.locY, orb.radius, 0, Math.PI * 2);
+    // actually fills in/draws
+    context.fill();
+  });
 
   /*
     Recursively call the 'draw' function forever for every new frame that the browser is capable of running.

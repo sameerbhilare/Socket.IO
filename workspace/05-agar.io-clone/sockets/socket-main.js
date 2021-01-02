@@ -4,17 +4,19 @@ const Orb = require('./classes/Orb');
 const Player = require('./classes/Player');
 const PlayerConfig = require('./classes/PlayerConfig');
 const PlayerData = require('./classes/PlayerData');
+const checkForOrbCollisions = require('./check-collisions').checkForOrbCollisions;
+const checkForPlayerCollisions = require('./check-collisions').checkForPlayerCollisions;
 
 // default game settings
 let settings = {
-  defaultOrbs: 500, // number of orbs
+  defaultOrbs: 5000, // number of orbs
   defaultSpeed: 6, // how fast a player should move
   defaultSize: 6, // radius
   // as player gets bigger the zoom needs to go out
   // because once a player gets really big, it's very possible for the orb to take up the whole screen.
   defaultZoom: 1.5,
-  worldWidth: 500,
-  worldHeight: 500,
+  worldWidth: 5000,
+  worldHeight: 5000,
 };
 
 // orbs
@@ -81,15 +83,41 @@ io.sockets.on('connect', (socket) => {
     */
     if (
       (player.playerData.locX < 5 && player.playerData.xVector < 0) ||
-      (player.playerData.locX > 500 && xV > 0)
+      (player.playerData.locX > settings.worldWidth && xV > 0)
     ) {
       player.playerData.locY -= speed * yV;
-    } else if ((player.playerData.locY < 5 && yV > 0) || (player.playerData.locY > 500 && yV < 0)) {
+    } else if (
+      (player.playerData.locY < 5 && yV > 0) ||
+      (player.playerData.locY > settings.worldHeight && yV < 0)
+    ) {
       player.playerData.locX += speed * xV;
     } else {
       player.playerData.locX += speed * xV;
       player.playerData.locY -= speed * yV;
     }
+
+    let capturedOrbs = checkForOrbCollisions(
+      player.playerData,
+      player.playerConfig,
+      orbs,
+      settings
+    );
+
+    capturedOrbs
+      .then((data) => {
+        // collision happened
+        console.log(`Orbs Collision at ${data}`);
+        // if there is a collision we want to emit that to everybody
+        // because it doesn't matter what player ran into the orb that orb is removed from the board.
+        const orbData = {
+          orbIndex: data,
+          newOrb: orbs[data],
+        };
+        io.sockets.emit('orbSwitch', orbData);
+      })
+      .catch(() => {
+        // no collision
+      });
   });
 });
 

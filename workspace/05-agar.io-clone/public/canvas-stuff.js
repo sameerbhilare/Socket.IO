@@ -41,7 +41,7 @@ function draw() {
     // arg 4   = where to start drawing the arc/circle in radians (0 means 3 'o clock)
     // arg 5   = where to stop drawing the arc/circle in radians
     // 1 Math.PI = half circle, 2 Math.PI = full circle
-    context.arc(p.locX, p.locY, 10, 0, Math.PI * 2);
+    context.arc(p.locX, p.locY, p.radius, 0, Math.PI * 2);
     // actually fills in/draws
     context.fill();
 

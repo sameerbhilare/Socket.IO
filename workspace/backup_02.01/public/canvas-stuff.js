@@ -19,15 +19,16 @@ function draw() {
   // i.e. every time we draw a frame, wipe the entire canvas out
   context.clearRect(0, 0, canvas.width, canvas.height);
 
+  //console.log('player: locX and locY =>', player.locX, player.locY);
+
   // clamp the camera/viewport to the player
   const camX = -player.locX + canvas.width / 2;
   const camY = -player.locY + canvas.height / 2;
-  console.log(camX, camY);
   // move the canvas around
   context.translate(camX, camY);
 
   // ================
-  // Draw all players including THIS player/client
+  // Draw all the players
   players.forEach((p) => {
     // inform that we are about to start drawing
     context.beginPath();
@@ -130,4 +131,5 @@ canvas.addEventListener('mousemove', (event) => {
 
   player.xVector = xVector;
   player.yVector = yVector;
+  console.log('mousemove', player.xVector, player.yVector);
 });

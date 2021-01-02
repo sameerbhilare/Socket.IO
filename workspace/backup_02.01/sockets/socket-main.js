@@ -26,14 +26,12 @@ let players = [];
 initGame();
 
 io.sockets.on('connect', (socket) => {
-  console.log(socket.id);
   // a player has connected now.
   let player = {};
 
   // listening to client's request for init
   socket.on('init', (data) => {
-    console.log('init', data);
-    // add player to the 'game' room
+    // add the player to the 'game' room
     socket.join('game');
     // make PlayerConfig object
     let playerConfig = new PlayerConfig(settings);
@@ -41,16 +39,17 @@ io.sockets.on('connect', (socket) => {
     let playerData = new PlayerData(data.playerName, settings);
     // make master Player object which will hold both PlayerConfig and PlayerData
     player = new Player(socket.id, playerConfig, playerData);
+    console.log('playerData: ', playerData.locX, playerData.locY);
 
     // issue a 'tock' message to EVERY socket connected at 'game' room at 30fps
     setInterval(() => {
-      // using 'tock' event from server side and then 'tick' event from client side
+      //console.log(player.playerData.locX, player.playerData.locY);
       io.to('game').emit('tock', {
-        players, // send data of all connected players
-        playerX: player.playerData.locX, // THIS player's location X, so that the client knows where to clamp the camera/viewport
-        playerY: player.playerData.locY, // THIS player's location Y, so that the client knows where to clamp the camera/viewport
+        players,
+        playerX: player.playerData.locX,
+        playerY: player.playerData.locY,
       });
-    }, 33); // there are 30 33s in 1000 ms OR 1/30th of a second OR 1 of 30 frames per second
+    }, 33);
 
     // return orbs as response to the client's 'init' event
     socket.emit('initReturn', { orbs });
@@ -58,38 +57,43 @@ io.sockets.on('connect', (socket) => {
     players.push(playerData);
   });
 
-  // listen to client's 'tick' event
-  // get the player's x and y coordinates. That means we know what direction to move the socket
+  // client sends the 'tick' event, that means we now to which direction to move the player
   socket.on('tick', (data) => {
-    // console.log(player);
-    speed = player.playerConfig.speed;
-    // update the playerConfig object with new directions
-    // also at the same time store this in local variables for readability
-    xV = player.playerConfig.xVector = data.xVector;
-    yV = player.playerConfig.yVector = data.yVector;
+    let speed = player.playerConfig.speed;
+    // update playerconfig object with new direction
+    player.playerConfig.xVector = data.xVector;
+    player.playerConfig.yVector = data.yVector;
+    // local variable
+    let xV = data.xVector;
+    let yV = data.yVector;
+
+    //console.log(xV, yV);
 
     /*
-        This must be done at server side as opposed to client side 
-        because a savvy JS developer could exploit this if this code is at client side.
-        Logic here checks to see if the users trying to go off the page 
-        or the players trying to go off off the grid. 
-        1. Ours is below 5 and bigger than 500. That's the only way we'll will allow them to move along the y.
-        2. The same thing is true here for our in between 5 and 500 for the X.
-        3. If they're not trying to pull either of those off then we move them in both directions
-        Move the user on the line by their speed.
-        Move them within the bounds of the game.
+      Logic here checks to see if the users trying to go off the page 
+      or the players trying to go off off the grid. 
+      1. Ours is below 5 and bigger than 500. That's the only way we'll will allow them to move along the y.
+      2. The same thing is true here for our in between 5 and 500 for the X.
+      3. If they're not trying to pull either of those off then we move them in both directions
+      Move the user on the line by their speed.
+      Move them within the bounds of the game.
     */
+
     if (
       (player.playerData.locX < 5 && player.playerData.xVector < 0) ||
-      (player.playerData.locX > 500 && xV > 0)
+      (player.playerData.locX > settings.worldWidth && xV > 0)
     ) {
       player.playerData.locY -= speed * yV;
-    } else if ((player.playerData.locY < 5 && yV > 0) || (player.playerData.locY > 500 && yV < 0)) {
+    } else if (
+      (player.playerData.locY < 5 && yV > 0) ||
+      (player.playerData.locY > settings.worldHeight && yV < 0)
+    ) {
       player.playerData.locX += speed * xV;
     } else {
       player.playerData.locX += speed * xV;
       player.playerData.locY -= speed * yV;
     }
+    console.log('tick=> ', speed, player.playerData.locX, player.playerData.locY);
   });
 });
 

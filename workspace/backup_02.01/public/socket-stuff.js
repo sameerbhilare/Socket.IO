@@ -15,15 +15,13 @@ function init() {
 }
 
 // server sends back 'initReturn' event with some relevant data like orbs
-// this gets called only once because it is part of server's response to the client's 'init' event (above).
-// And the client's 'init' event will fire only once when user clicks on Strt Game button
 socket.on('initReturn', (data) => {
   // console.log(data.orbs);
   // orbs is gloabal variable declared in ui-stuff.js
   orbs = data.orbs;
 
-  // send 'tick' event EVERY 33ms and pass THIS player's x and y coordinates
   setInterval(() => {
+    //console.log(player.xVector, player.yVector);
     socket.emit('tick', {
       xVector: player.xVector || 0,
       yVector: player.yVector || 0,
@@ -31,10 +29,8 @@ socket.on('initReturn', (data) => {
   }, 33);
 });
 
-// listen to the server 'tock' event
 socket.on('tock', (data) => {
-  // console.log(data);
-  // players, player is declared in ui-stuff.js
+  //console.log(data);
   players = data.players;
   player.locX = data.playerX;
   player.locY = data.playerY;

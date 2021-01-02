@@ -9,14 +9,14 @@ const checkForPlayerCollisions = require('./check-collisions').checkForPlayerCol
 
 // default game settings
 let settings = {
-  defaultOrbs: 5000, // number of orbs
+  defaultOrbs: 50, // number of orbs
   defaultSpeed: 6, // how fast a player should move
   defaultSize: 6, // radius
   // as player gets bigger the zoom needs to go out
   // because once a player gets really big, it's very possible for the orb to take up the whole screen.
   defaultZoom: 1.5,
-  worldWidth: 5000,
-  worldHeight: 5000,
+  worldWidth: 500,
+  worldHeight: 500,
 };
 
 // orbs
@@ -26,6 +26,16 @@ let players = [];
 
 // call init game on load
 initGame();
+
+// issue a 'tock' message to EVERY socket connected at 'game' room at 30fps
+setInterval(() => {
+  if (players.length > 0) {
+    // using 'tock' event from server side and then 'tick' event from client side
+    io.to('game').emit('tock', {
+      players, // send data of all connected players
+    });
+  }
+}, 33); // there are 30 33s in 1000 ms OR 1/30th of a second OR 1 of 30 frames per second
 
 io.sockets.on('connect', (socket) => {
   console.log(socket.id);
@@ -44,11 +54,10 @@ io.sockets.on('connect', (socket) => {
     // make master Player object which will hold both PlayerConfig and PlayerData
     player = new Player(socket.id, playerConfig, playerData);
 
-    // issue a 'tock' message to EVERY socket connected at 'game' room at 30fps
+    // issue a 'tickTock' message to THIS socket ONLY and pass THIS player's X and Y locations at 30fps
     setInterval(() => {
       // using 'tock' event from server side and then 'tick' event from client side
-      io.to('game').emit('tock', {
-        players, // send data of all connected players
+      socket.emit('tickTock', {
         playerX: player.playerData.locX, // THIS player's location X, so that the client knows where to clamp the camera/viewport
         playerY: player.playerData.locY, // THIS player's location Y, so that the client knows where to clamp the camera/viewport
       });
@@ -96,6 +105,7 @@ io.sockets.on('connect', (socket) => {
       player.playerData.locY -= speed * yV;
     }
 
+    // ORBS COLLISION
     let capturedOrbs = checkForOrbCollisions(
       player.playerData,
       player.playerConfig,
@@ -117,6 +127,22 @@ io.sockets.on('connect', (socket) => {
       })
       .catch(() => {
         // no collision
+      });
+
+    // PLAYERS COLLISION
+    let playerDeath = checkForPlayerCollisions(
+      player.playerData,
+      player.playerConfig,
+      players,
+      player.socketId
+    );
+    playerDeath
+      .then((data) => {
+        // player collision
+        console.log('Player collision');
+      })
+      .catch(() => {
+        // no player collision
       });
   });
 });

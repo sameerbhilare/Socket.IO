@@ -31,16 +31,21 @@ socket.on('initReturn', (data) => {
   }, 33);
 });
 
-// listen to the server 'tock' event
+// listen to the server 'tock' event to get ALL players data
 socket.on('tock', (data) => {
   // console.log(data);
-  // players, player is declared in ui-stuff.js
+  // players is declared in ui-stuff.js
   players = data.players;
-  player.locX = data.playerX;
-  player.locY = data.playerY;
 });
 
 socket.on('orbSwitch', (data) => {
   // remove the orb and add new orb
   orbs.splice(data.orbIndex, 1, data.newOrb);
+});
+
+// 'tickTock' message to THIS socket ONLY at 30fps and get THIS player's X and Y locations
+socket.on('tickTock', (data) => {
+  // player is declared in ui-stuff.js
+  player.locX = data.playerX;
+  player.locY = data.playerY;
 });

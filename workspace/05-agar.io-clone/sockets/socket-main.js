@@ -124,6 +124,8 @@ io.sockets.on('connect', (socket) => {
           newOrb: orbs[data],
         };
         io.sockets.emit('orbSwitch', orbData);
+        // every socket needs to know that leader board has changed
+        io.sockets.emit('updateLeaderBoard', getLeaderBoard());
       })
       .catch(() => {
         // no collision
@@ -140,12 +142,26 @@ io.sockets.on('connect', (socket) => {
       .then((data) => {
         // player collision
         console.log('Player collision');
+        // every socket needs to know that leader board has changed
+        io.sockets.emit('updateLeaderBoard', getLeaderBoard());
       })
       .catch(() => {
         // no player collision
       });
   });
 });
+
+function getLeaderBoard() {
+  // sort players in desc order
+  players.sort((a, b) => b.score - a.score);
+  let leaderBoard = players.map((currPlayer) => {
+    return {
+      name: currPlayer.name,
+      score: currPlayer.score,
+    };
+  });
+  return leaderBoard;
+}
 
 // run at the beginning of each game
 function initGame() {

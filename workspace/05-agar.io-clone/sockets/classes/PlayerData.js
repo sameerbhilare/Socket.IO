@@ -1,6 +1,10 @@
 // what everybody needs to know about everybody else. We have to store that somewhere.
+const { v4: uuidv4 } = require('uuid');
+
 class PlayerData {
   constructor(playerName, settings) {
+    // we should not use socketid as unique id and pass to client because of security reasons, socket id should not be exposed to clients
+    this.uid = uuidv4(); // random unique id for player
     this.name = playerName;
     this.locX = Math.floor(settings.worldWidth * Math.random() + 100);
     this.locY = Math.floor(settings.worldHeight * Math.random() + 100);

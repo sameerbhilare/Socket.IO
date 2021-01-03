@@ -144,10 +144,29 @@ io.sockets.on('connect', (socket) => {
         console.log('Player collision');
         // every socket needs to know that leader board has changed
         io.sockets.emit('updateLeaderBoard', getLeaderBoard());
+        // broadcast player death to everyone
+        io.sockets.emit('playerDeath', data);
       })
       .catch(() => {
         // no player collision
       });
+  });
+
+  socket.on('disconnect', (data) => {
+    // console.log(data);
+
+    // avoid nullpointer in case when player has connected the socket and has not joined the game yet
+    // but then they disconnect, then they won't have playerData setup yet
+    if (player.playerData) {
+      players.forEach((currPlayer, i) => {
+        if (currPlayer.uid === player.playerData.uid) {
+          // remove the player (who just left) from the players list
+          players.splice(i, 1);
+          // update the leaderboard
+          io.sockets.emit('updateLeaderBoard', getLeaderBoard());
+        }
+      });
+    }
   });
 });
 

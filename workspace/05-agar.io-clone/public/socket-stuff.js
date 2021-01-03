@@ -59,3 +59,17 @@ socket.on('updateLeaderBoard', (data) => {
     leaderBoardEle.innerHTML += `<li class='leaderboard-player'>${currPlayer.name} - ${currPlayer.score}</li>`;
   });
 });
+
+socket.on('playerDeath', (data) => {
+  console.log(`${data.died.name} absorbed by ${data.killedBy.name}`);
+  document.getElementById(
+    'game-message'
+  ).innerHTML = `${data.died.name} absorbed by ${data.killedBy.name}`;
+  $('#game-message').css({
+    'background-color': '#00e6e6',
+    opacity: 1,
+  });
+  $('#game-message').show();
+  // fadeout after 5 seconds
+  $('#game-message').fadeOut(5000);
+});

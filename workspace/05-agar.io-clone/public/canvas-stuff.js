@@ -22,7 +22,7 @@ function draw() {
   // clamp the camera/viewport to the player
   const camX = -player.locX + canvas.width / 2;
   const camY = -player.locY + canvas.height / 2;
-  console.log(camX, camY);
+  // console.log(camX, camY);
   // move the canvas around
   context.translate(camX, camY);
 
